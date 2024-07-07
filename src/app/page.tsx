@@ -1,113 +1,215 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { Intro } from "@/components/Intro";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
+import { useProgressiveWebApp } from "@/hooks/usePWA";
+import { useServiceWorker } from "@/hooks/useServiceWorker";
+import { useNotifications } from "@/hooks/useNotifications";
+import { useState } from "react";
+import { api } from "@/api/react";
+import * as React from "react";
+import Link from "next/link";
+import {A} from "@/components/ui/link";
+
+export default function PwaDemoPage() {
+  const { toast } = useToast();
+  const [pusherError, setPusherError] = useState<string | undefined>();
+  const pwa = useProgressiveWebApp();
+  const sw = useServiceWorker();
+  const notifs = useNotifications();
+  const push = api.push.useMutation({
+    onSuccess: () => {
+      toast({
+        description:
+          "Push notification sent. It'll pop up soon (timing not exact)",
+      });
+    },
+    onError: (err) => {
+      toast({
+        title: "Failed to send push notification",
+        description: err.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const sendTestNotification = async () => {
+    if (!notifs.isSupported) {
+      toast({
+        description: "Notifications are not supported on your device",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (!notifs.hasPermission) {
+      const { error } = await notifs.requestNotificationPermission();
+      if (error) {
+        toast({
+          description: error,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    try {
+      await notifs.sendMessage(
+        "Test notification",
+        "This is a test notification",
+      );
+    } catch (err) {
+      toast({
+        title: "Failed at sending notifcation",
+        description: String(err),
+        variant: "destructive",
+      });
+    }
+  };
+
+  const requestPusherInfo = async () => {
+    if (sw.pushPermission) {
+      return;
+    }
+    if (!sw.isSupported) {
+      toast({
+        description: "Service workers are not supported on your device",
+        variant: "destructive",
+      });
+      return;
+    }
+    const { error } = await sw.register();
+    if (error) {
+      toast({
+        description: error,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await sw.requestPushPermission();
+    } catch (err) {
+      setPusherError(String(err));
+    }
+  };
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:size-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
+    <div>
+      <div className={"mb-4 px-2"}>
+        <h1 className={"mb-2 mt-4 text-3xl"}>PWA testing grounds</h1>
+        <h2 className={"mb-2 mt-4 text-xl"}>Notifications</h2>
+        <p>Notifications in the browser can be sent with 2.5 different methods</p>
+        <ol className="pl-4 py-2 list-decimal text-sm">
+          <li><A href={"https://developer.mozilla.org/en-US/docs/Web/API/Notification/Notification"}>new Notification()</A></li>
+          <li><A href={"https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration/showNotification"}>serviceworker.showNotification()</A></li>
+          <li>Using <A href={'https://developer.mozilla.org/en-US/docs/Web/API/PushManager'}>PushManager API</A> to send a message from backend to a service worker that itself calls showNotification (method 2)</li>
+        </ol>
+
+        <p>There are some immediate clarifications though:</p>
+        <ul className="pl-4 py-2 list-disc text-sm">
+          <li>On mobile phones, the app must be installed as a PWA</li>
+          <li>YES, 3rd method will display notifications on mobile phones, including iOS, <strong>even though the app is closed</strong></li>
+          <li>NO, iOS does <strong>not support 1st method</strong> <sup>unlike what <A href={'https://developer.mozilla.org/en-US/docs/Web/API/Notification/Notification#browser_compatibility'}>MDN says</A></sup></li>
+          <li>Desktop browsers does <strong>not support 3rd method</strong></li>
+          <li>iOS does not support the full showNotifications API. Note that icon is selected from web manifest (rather than specified in notification).</li>
+        </ul>
+
+        <p>In the same breath, it may be worth mentioning that for a web app to be installable as PWA, it must</p>
+        <ul className="pl-4 py-2 list-disc text-sm">
+          <li>Have a <A href={'https://developer.mozilla.org/en-US/docs/Web/Manifest'}>web manifest</A></li>
+          <li>Be served over HTTPS. When doing local development, consider therefore <A href={'https://ngrok.com/'}>ngrok</A>, <A href={'https://ngrok.com/'}>ngrok</A>,<A href={'https://tunnelin.com/'}>tunnelin</A>,<A href={'https://pinggy.io/'}>pinggy.io</A>, or <A href={'https://loophole.cloud/'}>loophole.cloud</A></li>
+        </ul>
       </div>
+      <h2 className={"mb-2 mt-4 text-xl"}>Testing grounds: Notifications</h2>
+      <div className={"flex flex-col items-start gap-1"}>
+        <Button
+          variant={pwa.isInstalled ? "green" : "default"}
+          disabled={!pwa.isInstallAllowed || pwa.isInstalled}
+          onClick={pwa.prompt}
+        >
+          Add to Home screen: {pwa.isInstalled ? "Installed" : "install"}
+        </Button>
+        <Button
+          variant={sw.isInstalled ? "green" : "default"}
+          disabled={!sw.isSupported}
+          onClick={sw.isInstalled ? sw.unRegister : sw.register}
+        >
+          Service worker: {sw.isInstalled ? "Installed" : "install"}
+        </Button>
+        <Button
+          variant={sw.isInstalled ? "destructive" : "default"}
+          disabled={!sw.isInstalled}
+          onClick={() => {
+            sw.sendEvent("Test event", "This is a test event").catch((err) => {
+              toast({
+                title: "Failed to send event",
+                description: String(err),
+                variant: "destructive",
+              });
+            });
+          }}
+        >
+          Send message to service worker
+        </Button>
+        <Button
+          variant={notifs.hasPermission ? "green" : "default"}
+          disabled={!notifs.isSupported}
+          onClick={notifs.requestNotificationPermission}
+        >
+          Notifications: {notifs.hasPermission ? "Allowed" : "Request access"}
+        </Button>
 
-      <div className="relative z-[-1] flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
+        <Button
+          variant={notifs.hasPermission ? "destructive" : "default"}
+          onClick={sendTestNotification}
+        >
+          Test notification
+        </Button>
+        <Button
+          variant={sw.hasPushPermission ? "green" : "default"}
+          onClick={requestPusherInfo}
+        >
+          Request pusher info
+        </Button>
+        <Button
+          variant={sw.hasPushPermission ? "destructive" : "default"}
+          disabled={!sw.hasPushPermission}
+          onClick={() => {
+            if (!sw.pushPermission) {
+              return;
+            }
+            push.mutate({
+              title: "Test push notification",
+              description: "This is a test push notification",
+              // @ts-expect-error
+              permission: sw.pushPermission,
+            });
+          }}
+        >
+          Send notification via Push api
+        </Button>
+        {(sw.pushPermission && (
+            <div>
+              <h2 className={"my-2"}>PushManager permission</h2>
+              <code className={"block bg-white p-2 text-xs text-red-800"}>
+              <pre className={"max-w-full overflow-x-scroll"}>
+                {JSON.stringify(sw.pushPermission, null, 2)}
+              </pre>
+              </code>
+            </div>
+          )) ||
+          (pusherError && (
+            <div>
+              <h2 className={"my-2"}>PushManager permission error</h2>
+              <code className={"block bg-white p-2 text-xs text-red-800"}>
+                <pre className={"max-w-full overflow-x-scroll"}>
+                  {JSON.stringify(pusherError, null, 2)}
+                </pre>
+              </code>
+            </div>
+          ))}
       </div>
-
-      <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-balance text-sm opacity-50">
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+    </div>
   );
 }
