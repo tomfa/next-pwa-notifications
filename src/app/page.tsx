@@ -384,8 +384,16 @@ const Prerequisites = ({
       <Status
         status={pwa.isInstalled}
         label={"Installed as PWA"}
-        helpText={"Mobile requirement"}
+        helpText={
+          <div className={"flex flex-col gap-0.5"}>
+            <span className={"text-xs text-gray-400"}>Mobile requirement</span>
+            <A className={"text-xs mb-2"} href={"/install"}>
+              See installation instructions
+            </A>
+          </div>
+        }
       />
+
       <Status status={notifs.isSupported} label={"Notifications supported"} />
       <Status
         status={notifs.hasPermission}

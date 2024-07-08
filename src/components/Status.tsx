@@ -10,7 +10,7 @@ export const Status = ({
   label,
 }: {
   status: boolean | undefined;
-  helpText?: string;
+  helpText?: string | React.ReactNode;
   label: string;
 }) => {
   return (
@@ -19,9 +19,10 @@ export const Status = ({
         (status === false && <CrossIcon />) || <SpinnerIcon />}{" "}
       <div className={"flex flex-col"}>
         <span>{label}</span>
-        {helpText && (
+        {(typeof helpText === "string" && (
           <span className={"text-xs text-gray-400"}>{helpText}</span>
-        )}
+        )) ||
+          helpText}
       </div>
     </div>
   );
