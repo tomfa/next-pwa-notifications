@@ -1,19 +1,16 @@
 {
-  "name": "Dutytime",
-  "short_name": "Dutytime",
+  "name": "So Progressive",
+  "short_name": "SoPWA",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#1f2937",
+  "background_color": "#0B9B92",
   "orientation": "portrait",
-  "description": "Chores made easy. Dutytime is a simple and easy to use app that helps you keep track of your chores and tasks. It's perfect for families, roommates, and anyone who wants to keep their home clean and organized.",
+  "description": "My 1st PWA",
   "icons": [{
-    "src": "img/logo_144.png",
+    "src": "img/pwa/logo_144.png",
     "sizes": "144x144"
-  },{
-    "src": "img/logo_512.png",
-    "sizes": "512x512"
   }, {
-    "src": "img/cleaner_red.svg",
+    "src": "img/pwa/bg.svg",
     "sizes": "48x48 72x72 96x96 128x128 256x256"
   }],
   "related_applications": [{
