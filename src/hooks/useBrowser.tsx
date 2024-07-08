@@ -19,7 +19,6 @@ export const useBrowser = () => {
 
   const redetectBrowser = useCallback(() => {
     const currentValue = getBrowser();
-    console.log("currentValue", currentValue);
     if (currentValue) {
       setBrowser(currentValue.browser);
       setUserAgent(currentValue.userAgent);
@@ -120,5 +119,5 @@ const getBrowser = (): { browser: Browser; userAgent: string } | null => {
     return { browser: Browser.BLINK, userAgent: navigator.userAgent };
   }
 
-  return null;
+  return { browser: "Unknown" as any, userAgent: navigator.userAgent };
 };

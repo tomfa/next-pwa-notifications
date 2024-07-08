@@ -123,6 +123,7 @@ export const useServiceWorker = () => {
     unRegister,
     showNotification,
     requestPushPermission,
+    supportsPushManager: !!sw?.pushManager,
     pushPermission,
     hasPushPermission: !!pushPermission,
     data: {

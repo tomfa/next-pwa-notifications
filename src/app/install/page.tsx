@@ -48,7 +48,7 @@ export default function DocsDownloadAsAppPage() {
 
       <Tabs
         defaultValue={tab || Platform.IOS}
-        value={tab}
+        value={tab || undefined}
         className="mb-4 w-[400px] max-w-full"
         onValueChange={(val) => setTab(val as Platform)}
       >
@@ -108,7 +108,7 @@ const IosDownloadTab = () => {
           <div className={"mb-10 flex flex-col gap-2"}>
             <span>Click the share icon in your browser</span>
 
-            {browser === Browser.SAFARI ? (
+            {browser.browser === Browser.SAFARI ? (
               <Image
                 src={"/img/pwa/iphone-safari-share.png"}
                 alt={"Install button in Safari"}

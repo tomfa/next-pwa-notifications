@@ -410,11 +410,15 @@ const Prerequisites = ({
         <Button onClick={sw.register}>Install service worker</Button>
       )}
       <Status
+        status={sw.supportsPushManager}
+        label={"Supports PushManager API"}
+      />
+      <Status
         status={sw.hasPushPermission}
-        label={"Push API access permissions"}
+        label={"PushManager API permissions"}
         helpText={"Mobile requirement"}
       />
-      {sw.isInstalled && !sw.hasPushPermission && (
+      {sw.isInstalled && sw.supportsPushManager && (
         <Button onClick={requestPusherInfo}>Request pusher access</Button>
       )}
       {pusherError && (

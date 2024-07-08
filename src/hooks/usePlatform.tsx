@@ -11,11 +11,11 @@ export const Platform = {
 export type Platform = (typeof Platform)[keyof typeof Platform];
 
 export const usePlatform = () => {
-  const [navigatorPlatform, setNavigatorPlatform] = useState<string>(null);
+  const [navigatorPlatform, setNavigatorPlatform] = useState<string>();
   const [userAgent, setUserAgent] = useState<string | null>(null);
 
   const redetectPlatform = useCallback(() => {
-    if (navigatorPlatform !== null) {
+    if (!!navigatorPlatform) {
       return;
     }
     const currentValue = getPlatform();
@@ -49,6 +49,10 @@ export const usePlatform = () => {
     ];
     const windowsPlatforms = ["Win32", "Win64", "Windows", "WinCE"];
     const iosPlatforms = ["iPhone", "iPad", "iPod"];
+
+    if (!navigatorPlatform) {
+      return null;
+    }
 
     if (macosPlatforms.indexOf(navigatorPlatform) !== -1) {
       return Platform.MAC;
