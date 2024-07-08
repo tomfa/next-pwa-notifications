@@ -66,7 +66,15 @@ export const useServiceWorker = () => {
       if (!sw) {
         return false;
       }
-      await sw.showNotification(title, body ? { body } : undefined);
+      await sw.showNotification(
+        title,
+        body
+          ? {
+              body,
+              icon: "/img/pwa/bg.svg", // Note: Icon not supported on iOS
+            }
+          : undefined,
+      );
     },
     [register, isSupported],
   );

@@ -34,6 +34,7 @@ addEventListener("push", (event) => {
   console.log(`Push data`, json);
   const title = json?.title;
   const body = json?.body;
+  const icon = json?.icon;
   // @ts-ignore
-  event.waitUntil(registration.showNotification(title, { body }));
+  event.waitUntil(registration.showNotification(title, { body, icon }));
 });

@@ -39,6 +39,7 @@ export const useNotifications = () => {
       }
       const options: NotificationOptions = {
         body: body || "",
+        icon: "/img/pwa/bg.svg", // Note: Icon not supported on iOS
       };
       return new Notification(title, options);
     },

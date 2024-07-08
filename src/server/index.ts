@@ -28,7 +28,11 @@ const appRouter = router({
 
       const response = await webpush.sendNotification(
         input.permission,
-        JSON.stringify({ title: input.title, body: input.description }),
+        JSON.stringify({
+          title: input.title,
+          body: input.description,
+          icon: "/img/pwa/bg.svg", // Note: Icon not supported on iOS
+        }),
       );
       console.log("SENDNOTIFICATION RESPONSE", response);
       return { success: true, response };
