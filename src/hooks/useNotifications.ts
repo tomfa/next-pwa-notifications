@@ -1,14 +1,21 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import {useCallback, useEffect, useState} from "react";
 import { useServiceWorker } from "./useServiceWorker";
 
 export const useNotifications = () => {
-  const sw = useServiceWorker();
-  const isSupported = typeof Notification !== "undefined";
-  const [permission, setPermission] = useState<null | NotificationPermission>(
-    isSupported ? Notification.permission : null,
-  );
+  const [isSupported, setSupported] = useState<boolean>();
+  const [permission, setPermission] = useState<NotificationPermission | null>(null);
+
+  useEffect(() => {
+    if (typeof Notification === "undefined") {
+      setSupported(false);
+      setPermission(null);
+      return;
+    }
+    setSupported(true);
+    setPermission(Notification.permission);
+  }, []);
 
   const requestNotificationPermission = useCallback(async () => {
     if (!isSupported) {
@@ -22,17 +29,18 @@ export const useNotifications = () => {
     return { error: null };
   }, [isSupported]);
   const hasPermission = isSupported && permission === "granted";
-  const swShowNotif = sw.showNotification;
-  const swSupported = sw.isSupported;
 
   const sendMessage = useCallback(
     (title: string, body?: string) => {
-      if (!hasPermission || !swSupported) {
+      if (!hasPermission) {
         return false;
       }
-      return swShowNotif(title, body);
+      const options: NotificationOptions = {
+        body: body || '',
+      };
+      return new Notification(title, options);
     },
-    [hasPermission, swSupported, swShowNotif],
+    [hasPermission],
   );
 
   return {
