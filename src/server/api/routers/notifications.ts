@@ -1,10 +1,10 @@
 import * as webpush from "web-push";
 import { z } from "zod";
 
-import { publicProcedure, router } from "./trpc";
+import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
 import { env } from "@/env";
 
-const appRouter = router({
+export const notificationRouter = createTRPCRouter({
   push: publicProcedure
     .input(
       z.object({
@@ -28,26 +28,9 @@ const appRouter = router({
 
       const response = await webpush.sendNotification(
         input.permission,
-        JSON.stringify({
-          title: input.title,
-          body: input.description,
-          icon: "/img/pwa/bg.svg", // Note: Icon not supported on iOS
-        }),
+        JSON.stringify({ title: input.title, body: input.description }),
       );
       console.log("SENDNOTIFICATION RESPONSE", response);
       return { success: true, response };
     }),
 });
-
-// Export type router type signature,
-// NOT the router itself.
-export type AppRouter = typeof appRouter;
-
-/**
- * Create a server-side caller for the tRPC API.
- * @example
- * const trpc = createCaller(createContext);
- * const res = await trpc.post.all();
- *       ^? Post[]
- */
-export const createCaller = appRouter.createCaller;

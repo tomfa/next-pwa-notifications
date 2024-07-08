@@ -6,12 +6,12 @@ import { useProgressiveWebApp } from "@/hooks/usePWA";
 import { useServiceWorker } from "@/hooks/useServiceWorker";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useState } from "react";
-import { api } from "@/api/react";
 import * as React from "react";
 import { A } from "@/components/ui/link";
-import { Status, StatusIcon } from "@/components/Status";
+import { Status } from "@/components/Status";
 import { useBrowser } from "@/hooks/useBrowser";
 import { usePlatform } from "@/hooks/usePlatform";
+import { api } from "@/trpc/react";
 
 export default function PwaDemoPage() {
   const sw = useServiceWorker();
@@ -146,7 +146,7 @@ const NotificationTesting = ({
   const pwa = useProgressiveWebApp();
   const browser = useBrowser();
 
-  const push = api.push.useMutation({
+  const push = api.notifications.push.useMutation({
     onSuccess: () => {
       toast({
         description:
