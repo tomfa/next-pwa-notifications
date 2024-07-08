@@ -118,7 +118,7 @@ export default function PwaDemoPage() {
         <p>In the same breath, it may be worth mentioning that for a web app to be installable as PWA, it must</p>
         <ul className="pl-4 py-2 list-disc text-sm">
           <li>Have a <A href={'https://developer.mozilla.org/en-US/docs/Web/Manifest'}>web manifest</A></li>
-          <li>Be served over HTTPS. When doing local development, consider therefore <A href={'https://ngrok.com/'}>ngrok</A>, <A href={'https://ngrok.com/'}>ngrok</A>,<A href={'https://tunnelin.com/'}>tunnelin</A>,<A href={'https://pinggy.io/'}>pinggy.io</A>, or <A href={'https://loophole.cloud/'}>loophole.cloud</A></li>
+          <li>Be served over HTTPS. When doing local development, consider therefore <A href={'https://ngrok.com/'}>ngrok</A>, <A href={'https://tunnelin.com/'}>tunnelin</A>, <A href={'https://pinggy.io/'}>pinggy.io</A>, or <A href={'https://loophole.cloud/'}>loophole.cloud</A></li>
         </ul>
       </div>
       <h2 className={"mb-2 mt-4 text-xl"}>Testing grounds: Notifications</h2>
