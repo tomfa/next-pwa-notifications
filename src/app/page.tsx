@@ -122,6 +122,7 @@ export default function PwaDemoPage() {
         </ul>
       </div>
       <h2 className={"mb-2 mt-4 text-xl"}>Testing grounds: Notifications</h2>
+      <h3 className={"mb-2 mt-4 text-lg"}>Prerequisites</h3>
       <div className={"flex flex-col items-start gap-1"}>
         <Button
           variant={pwa.isInstalled ? "green" : "default"}
@@ -132,13 +133,53 @@ export default function PwaDemoPage() {
         </Button>
         <Button
           variant={sw.isInstalled ? "green" : "default"}
-          disabled={!sw.isSupported}
+          disabled={!sw.isSupported || sw.isInstalled}
           onClick={sw.isInstalled ? sw.unRegister : sw.register}
         >
           Service worker: {sw.isInstalled ? "Installed" : "install"}
         </Button>
+
         <Button
-          variant={sw.isInstalled ? "destructive" : "default"}
+          variant={notifs.hasPermission ? "green" : "default"}
+          disabled={!notifs.isSupported || notifs.hasPermission}
+          onClick={notifs.requestNotificationPermission}
+        >
+          Notifications: {notifs.hasPermission ? "Allowed" : "Request access"}
+        </Button>
+
+        <Button
+          variant={sw.hasPushPermission ? "green" : "default"}
+          disabled={!sw.isSupported || sw.hasPushPermission}
+          onClick={requestPusherInfo}
+        >
+          Request pusher info
+        </Button>
+        {(sw.pushPermission && (
+              <code className={"block bg-white p-2 text-xs text-red-800"}>
+              <pre className={"max-w-full overflow-x-scroll"}>
+                {JSON.stringify(sw.pushPermission, null, 2)}
+              </pre>
+              </code>
+          )) ||
+          (pusherError && (
+              <code className={"block bg-white p-2 text-xs text-red-800"}>
+                <pre className={"max-w-full overflow-x-scroll"}>
+                  {JSON.stringify(pusherError, null, 2)}
+                </pre>
+              </code>
+          ))}
+
+      </div>
+      <h3 className={"mb-2 mt-4 text-lg"}>Testing</h3>
+
+      <div className={"flex flex-col items-start gap-1"}>
+        <Button
+          disabled={!notifs.hasPermission}
+          onClick={sendTestNotification}
+        >
+          Method 1: Notification
+        </Button>
+        <Button
           disabled={!sw.isInstalled}
           onClick={() => {
             sw.sendEvent("Test event", "This is a test event").catch((err) => {
@@ -150,30 +191,11 @@ export default function PwaDemoPage() {
             });
           }}
         >
-          Send message to service worker
-        </Button>
-        <Button
-          variant={notifs.hasPermission ? "green" : "default"}
-          disabled={!notifs.isSupported}
-          onClick={notifs.requestNotificationPermission}
-        >
-          Notifications: {notifs.hasPermission ? "Allowed" : "Request access"}
+          Method 2: ServiceWorker.sendNotification
         </Button>
 
+
         <Button
-          variant={notifs.hasPermission ? "destructive" : "default"}
-          onClick={sendTestNotification}
-        >
-          Test notification
-        </Button>
-        <Button
-          variant={sw.hasPushPermission ? "green" : "default"}
-          onClick={requestPusherInfo}
-        >
-          Request pusher info
-        </Button>
-        <Button
-          variant={sw.hasPushPermission ? "destructive" : "default"}
           disabled={!sw.hasPushPermission}
           onClick={() => {
             if (!sw.pushPermission) {
@@ -187,28 +209,9 @@ export default function PwaDemoPage() {
             });
           }}
         >
-          Send notification via Push api
+          Method 3: Notification via Push API
         </Button>
-        {(sw.pushPermission && (
-            <div>
-              <h2 className={"my-2"}>PushManager permission</h2>
-              <code className={"block bg-white p-2 text-xs text-red-800"}>
-              <pre className={"max-w-full overflow-x-scroll"}>
-                {JSON.stringify(sw.pushPermission, null, 2)}
-              </pre>
-              </code>
-            </div>
-          )) ||
-          (pusherError && (
-            <div>
-              <h2 className={"my-2"}>PushManager permission error</h2>
-              <code className={"block bg-white p-2 text-xs text-red-800"}>
-                <pre className={"max-w-full overflow-x-scroll"}>
-                  {JSON.stringify(pusherError, null, 2)}
-                </pre>
-              </code>
-            </div>
-          ))}
+
       </div>
     </div>
   );

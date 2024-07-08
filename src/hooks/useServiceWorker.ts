@@ -2,9 +2,6 @@ import { useCallback, useEffect,  useState } from "react";
 import { env } from "@/env";
 
 export const useServiceWorker = () => {
-  console.log('typeof navigator', typeof navigator)
-  console.log('typeof navigator.serviceWorker', typeof navigator.serviceWorker)
-  console.log('typeof postMessage', typeof postMessage)
   const [isSupported, setSupported] = useState<boolean>();
 
   const [sw, setSw] = useState<ServiceWorkerRegistration | null>(null);
