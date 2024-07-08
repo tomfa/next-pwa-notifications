@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 export const Platform = {
   MAC: "Mac OS",
@@ -11,34 +11,77 @@ export const Platform = {
 export type Platform = (typeof Platform)[keyof typeof Platform];
 
 export const usePlatform = () => {
-  const [platform, setPlatform] = useState<Platform | null>(null);
+  const [navigatorPlatform, setNavigatorPlatform] = useState<string>(null);
+  const [userAgent, setUserAgent] = useState<string | null>(null);
 
   const redetectPlatform = useCallback(() => {
-    if (platform !== null) {
+    if (navigatorPlatform !== null) {
       return;
     }
     const currentValue = getPlatform();
     if (currentValue) {
-      setPlatform(currentValue);
+      setNavigatorPlatform(currentValue.platform);
+      setUserAgent(currentValue.userAgent);
     }
     return currentValue;
-  }, [platform]);
+  }, [navigatorPlatform]);
 
   useEffect(() => {
-    if (platform) {
+    if (navigatorPlatform) {
       return;
     }
-    const foundPlatform = redetectPlatform();
-    if (!foundPlatform) {
+    const value = redetectPlatform();
+    if (!value) {
       const timeout = setTimeout(redetectPlatform, 500);
       return () => clearTimeout(timeout);
     }
-    setPlatform(foundPlatform);
-  }, [platform, redetectPlatform]);
+    setNavigatorPlatform(value.platform);
+    setUserAgent(value.userAgent);
+  }, [navigatorPlatform, redetectPlatform]);
 
-  return platform;
+  const platform: Platform | null = useMemo(() => {
+    const macosPlatforms = [
+      "Macintosh",
+      "macOS",
+      "MacIntel",
+      "MacPPC",
+      "Mac68K",
+    ];
+    const windowsPlatforms = ["Win32", "Win64", "Windows", "WinCE"];
+    const iosPlatforms = ["iPhone", "iPad", "iPod"];
+
+    if (macosPlatforms.indexOf(navigatorPlatform) !== -1) {
+      return Platform.MAC;
+    }
+    if (iosPlatforms.indexOf(navigatorPlatform) !== -1) {
+      return Platform.IOS;
+    }
+    if (windowsPlatforms.indexOf(navigatorPlatform) !== -1) {
+      return Platform.WINDOWS;
+    }
+    if (!userAgent) {
+      return null;
+    }
+    if (/Android/.test(userAgent)) {
+      return Platform.ANDROID;
+    }
+    if (/Linux/.test(navigatorPlatform)) {
+      return Platform.LINUX;
+    }
+    return null;
+  }, [navigatorPlatform, userAgent]);
+
+  return useMemo(
+    () => ({
+      platform,
+      userAgent,
+      navigatorPlatform,
+      isMobile: platform === Platform.IOS || platform === Platform.ANDROID,
+    }),
+    [platform, userAgent, navigatorPlatform],
+  );
 };
-const getPlatform = (): Platform | null => {
+const getPlatform = (): { platform: string; userAgent: string } | null => {
   if (typeof window === "undefined") {
     return null;
   }
@@ -53,25 +96,5 @@ const getPlatform = (): Platform | null => {
     return null;
   }
 
-  const macosPlatforms = ["Macintosh", "macOS", "MacIntel", "MacPPC", "Mac68K"];
-  const windowsPlatforms = ["Win32", "Win64", "Windows", "WinCE"];
-  const iosPlatforms = ["iPhone", "iPad", "iPod"];
-
-  if (macosPlatforms.indexOf(platform) !== -1) {
-    return Platform.MAC;
-  }
-  if (iosPlatforms.indexOf(platform) !== -1) {
-    return Platform.IOS;
-  }
-  if (windowsPlatforms.indexOf(platform) !== -1) {
-    return Platform.WINDOWS;
-  }
-  if (/Android/.test(userAgent)) {
-    return Platform.ANDROID;
-  }
-  if (/Linux/.test(platform)) {
-    return Platform.LINUX;
-  }
-
-  return null;
+  return { platform, userAgent };
 };

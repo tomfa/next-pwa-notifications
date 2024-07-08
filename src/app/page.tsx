@@ -9,17 +9,23 @@ import { useState } from "react";
 import { api } from "@/api/react";
 import * as React from "react";
 import { A } from "@/components/ui/link";
+import { Status, StatusIcon } from "@/components/Status";
+import { useBrowser } from "@/hooks/useBrowser";
+import { usePlatform } from "@/hooks/usePlatform";
 
 export default function PwaDemoPage() {
+  const sw = useServiceWorker();
+  const notifs = useNotifications();
+
   return (
     <div>
       <div className={"mb-4 px-2"}>
         <h1 className={"mb-2 mt-4 text-3xl"}>PWA testing grounds</h1>
-        <h2 className={"mb-2 mt-4 text-xl"}>Notifications</h2>
-        <p>
+        <h2 className={"mb-2 mt-12 text-xl"}>Notifications</h2>
+        <p className={"mt-6"}>
           Notifications in the browser can be sent with 2.5 different methods
         </p>
-        <ol className="pl-4 py-2 list-decimal text-sm">
+        <ol className="pl-4 py-2 list-decimal">
           <li>
             <A
               href={
@@ -52,8 +58,10 @@ export default function PwaDemoPage() {
           </li>
         </ol>
 
-        <p>There are some immediate clarifications though:</p>
-        <ul className="pl-4 py-2 list-disc text-sm">
+        <p className={"mt-10"}>
+          There are some immediate clarifications though:
+        </p>
+        <ul className="pl-4 py-2 list-disc">
           <li>On mobile phones, the app must be installed as a PWA</li>
           <li>
             YES, 3rd method will display notifications on mobile phones,
@@ -102,19 +110,41 @@ export default function PwaDemoPage() {
           </li>
         </ul>
       </div>
-      <h2 className={"mb-2 mt-4 text-xl"}>Testing grounds: Notifications</h2>
-      <h3 className={"mb-2 mt-4 text-lg"}>Prerequisites</h3>
-      <Prerequisites />
-      <h3 className={"mb-2 mt-4 text-lg"}>Testing</h3>
-      <NotificationTesting />
+      <h2 className={"mb-2 mt-12 text-xl max-w-full"}>
+        Testing grounds: Notifications
+      </h2>
+      <div className={"flex gap-10 flex-col md:flex-row"}>
+        <div className={"flex-1 overflow-x-scroll"}>
+          <h3 className={"mb-2 mt-4 text-lg"}>Prerequisites</h3>
+          <Prerequisites sw={sw} notifs={notifs} />
+          <h3 className={"mb-2 mt-10 text-lg"}>Testing</h3>
+          <NotificationTesting sw={sw} notifs={notifs} />
+        </div>
+        <div className={"flex-1 overflow-x-scroll"}>
+          <h3 className={"mb-2 mt-4 text-lg"}>Data / settings</h3>
+          <DeviceInformation sw={sw} notifs={notifs} />
+        </div>
+      </div>
+      <div className={"text-center mt-20 text-sm"}>
+        <A href={"https://github.com/tomfa/next-pwa-notifications"}>
+          tomfa@github
+        </A>
+      </div>
     </div>
   );
 }
 
-const NotificationTesting = () => {
+const NotificationTesting = ({
+  sw,
+  notifs,
+}: {
+  notifs: ReturnType<typeof useNotifications>;
+  sw: ReturnType<typeof useServiceWorker>;
+}) => {
   const { toast } = useToast();
-  const sw = useServiceWorker();
-  const notifs = useNotifications();
+  const platform = usePlatform();
+  const pwa = useProgressiveWebApp();
+  const browser = useBrowser();
 
   const push = api.push.useMutation({
     onSuccess: () => {
@@ -163,15 +193,28 @@ const NotificationTesting = () => {
 
   return (
     <div className={"flex flex-col items-start gap-1"}>
-      <p className={"mb-2 bg-amber-200 text-black px-6 py-4 rounded"}>
-        Can&apos;t see any notifications? Maybe you&apos;re in &quot;Do not
-        disturb&quot; on your computer/mobile?
+      <p className={"mb-2 bg-gray-50 text-black px-6 py-4 rounded"}>
+        Can&apos;t see any notifications? It can be that you&apos;re in &quot;Do
+        not disturb&quot; mode on your{" "}
+        {platform.isMobile ? "mobile" : "desktop"}, or have disabled
+        notifications from {pwa.isInstalled ? "the app" : browser.browser} in{" "}
+        {platform.platform} settings.
       </p>
-      <Button disabled={!notifs.hasPermission} onClick={sendTestNotification}>
-        Method 1: new Notification()
-      </Button>
+      <span className="text-xs mt-4">Method 1</span>
       <Button
-        disabled={!sw.isInstalled}
+        variant={!notifs.hasPermission ? "outline" : "green"}
+        disabled={!notifs.hasPermission}
+        onClick={sendTestNotification}
+      >
+        new Notification()
+      </Button>
+      {platform.platform === "iOS" && (
+        <span className="text-xs text-red-500">Not supported on iOS</span>
+      )}
+      <span className="text-xs mt-4">Method 2</span>
+      <Button
+        variant={!sw.isInstalled || !notifs.hasPermission ? "outline" : "green"}
+        disabled={!sw.isInstalled || !notifs.hasPermission}
         onClick={() => {
           sw.showNotification(
             "Test event",
@@ -185,11 +228,17 @@ const NotificationTesting = () => {
           });
         }}
       >
-        Method 2: ServiceWorker.sendNotification()
+        ServiceWorker.sendNotification()
       </Button>
 
+      <span className="text-xs mt-4">Method 3</span>
       <Button
-        disabled={!sw.hasPushPermission}
+        variant={
+          !sw.hasPushPermission || !platform.isMobile || !notifs.hasPermission
+            ? "outline"
+            : "green"
+        }
+        disabled={!sw.hasPushPermission || !notifs.hasPermission}
         onClick={() => {
           if (!sw.pushPermission) {
             return;
@@ -202,18 +251,96 @@ const NotificationTesting = () => {
           });
         }}
       >
-        Method 3: Push API ➡️ ServiceWorker.showNotification()
+        Push API ➡️ ServiceWorker.showNotification()
       </Button>
+      {!platform.isMobile && (
+        <span className="text-xs text-red-500">Only supported on Mobile</span>
+      )}
     </div>
   );
 };
 
-const Prerequisites = () => {
+const DeviceInformation = ({
+  sw,
+  notifs,
+}: {
+  notifs: ReturnType<typeof useNotifications>;
+  sw: ReturnType<typeof useServiceWorker>;
+}) => {
+  const browser = useBrowser();
+  const device = usePlatform();
+  return (
+    <>
+      <h4 className={"mb-2 mt-4 text-md"}>Browser</h4>
+      {browser && (
+        <code
+          className={
+            "block bg-gray-900 p-2 text-xs text-amber-200 border-gray-600 border"
+          }
+        >
+          <pre className={"max-w-full overflow-x-scroll"}>
+            {JSON.stringify(browser, null, 2)}
+          </pre>
+        </code>
+      )}
+      <h4 className={"mb-2 mt-4 text-md"}>Device</h4>
+      {browser && (
+        <code
+          className={
+            "block bg-gray-900 p-2 text-xs text-amber-200 border-gray-600 border"
+          }
+        >
+          <pre className={"max-w-full overflow-x-scroll"}>
+            {JSON.stringify(device, null, 2)}
+          </pre>
+        </code>
+      )}
+      <h4 className={"mb-2 mt-4 text-md"}>Notification permission</h4>
+      {notifs.permission && (
+        <code
+          className={
+            "block bg-gray-900 p-2 text-xs text-amber-200 border-gray-600 border"
+          }
+        >
+          <pre className={"max-w-full overflow-x-scroll"}>
+            {JSON.stringify(notifs.permission, null, 2)}
+          </pre>
+        </code>
+      )}
+      <h4 className={"mb-2 mt-4 text-md"}>Push API permission</h4>
+      <code
+        className={
+          "block bg-gray-900 p-2 text-xs text-amber-200 border-gray-600 border"
+        }
+      >
+        <pre className={"max-w-full overflow-x-scroll"}>
+          {JSON.stringify(sw.pushPermission || null, null, 2)}
+        </pre>
+      </code>
+      <h4 className={"mb-2 mt-4 text-md"}>Serviceworker</h4>
+      <code
+        className={
+          "block bg-gray-900 p-2 text-xs text-amber-200 border-gray-600 border"
+        }
+      >
+        <pre className={"max-w-full overflow-x-scroll"}>
+          {JSON.stringify(sw.data || null, null, 2)}
+        </pre>
+      </code>
+    </>
+  );
+};
+
+const Prerequisites = ({
+  sw,
+  notifs,
+}: {
+  notifs: ReturnType<typeof useNotifications>;
+  sw: ReturnType<typeof useServiceWorker>;
+}) => {
   const { toast } = useToast();
   const [pusherError, setPusherError] = useState<string | undefined>();
   const pwa = useProgressiveWebApp();
-  const sw = useServiceWorker();
-  const notifs = useNotifications();
 
   const requestPusherInfo = async () => {
     if (sw.pushPermission) {
@@ -244,53 +371,55 @@ const Prerequisites = () => {
 
   return (
     <div className={"flex flex-col items-start gap-1"}>
-      <Button variant={pwa.isHttps ? "green" : "default"} disabled>
-        Served over HTTPS: {pwa.isHttps ? "Yes" : "No"}
-      </Button>
-      <Button
-        variant={pwa.isInstalled ? "green" : "default"}
-        disabled={!pwa.isInstallAllowed || pwa.isInstalled || !pwa.isHttps}
-        onClick={pwa.prompt}
-      >
-        Add to Home screen: {pwa.isInstalled ? "Installed" : "install"}
-      </Button>
-      <Button
-        variant={sw.isInstalled ? "green" : "default"}
-        disabled={!sw.isSupported || sw.isInstalled}
-        onClick={sw.isInstalled ? sw.unRegister : sw.register}
-      >
-        Service worker: {sw.isInstalled ? "Installed" : "install"}
-      </Button>
-
-      <Button
-        variant={notifs.hasPermission ? "green" : "default"}
-        disabled={!notifs.isSupported || notifs.hasPermission}
-        onClick={notifs.requestNotificationPermission}
-      >
-        Notifications: {notifs.hasPermission ? "Allowed" : "Request access"}
-      </Button>
-
-      <Button
-        variant={sw.hasPushPermission ? "green" : "default"}
-        disabled={!sw.isSupported || sw.hasPushPermission}
-        onClick={requestPusherInfo}
-      >
-        Request pusher info
-      </Button>
-      {(sw.pushPermission && (
-        <code className={"block bg-white p-2 text-xs text-red-800"}>
+      <Status
+        status={pwa.isHttps}
+        label={"Served over HTTPS"}
+        helpText={"PWA Requirement (mobile)"}
+      />
+      <Status
+        status={pwa.isInstallAllowed}
+        label={"PWA Install supported"}
+        helpText={"Mobile requirement"}
+      />
+      <Status
+        status={pwa.isInstalled}
+        label={"Installed as PWA"}
+        helpText={"Mobile requirement"}
+      />
+      <Status status={notifs.isSupported} label={"Notifications supported"} />
+      <Status
+        status={notifs.hasPermission}
+        label={"Notifications permissions"}
+      />
+      {notifs.isSupported && !notifs.hasPermission && (
+        <Button onClick={notifs.requestNotificationPermission}>
+          Request notification permission
+        </Button>
+      )}
+      <Status status={sw.isSupported} label={"Service worker supported"} />
+      <Status status={sw.isInstalled} label={"Service worker installed"} />
+      {sw.isSupported && !sw.isInstalled && (
+        <Button onClick={sw.register}>Install service worker</Button>
+      )}
+      <Status
+        status={sw.hasPushPermission}
+        label={"Push API access permissions"}
+        helpText={"Mobile requirement"}
+      />
+      {sw.isInstalled && !sw.hasPushPermission && (
+        <Button onClick={requestPusherInfo}>Request pusher access</Button>
+      )}
+      {pusherError && (
+        <code
+          className={
+            "block bg-white p-2 text-xs text-amber-200 border-gray-600 border"
+          }
+        >
           <pre className={"max-w-full overflow-x-scroll"}>
-            {JSON.stringify(sw.pushPermission, null, 2)}
+            {JSON.stringify(pusherError, null, 2)}
           </pre>
         </code>
-      )) ||
-        (pusherError && (
-          <code className={"block bg-white p-2 text-xs text-red-800"}>
-            <pre className={"max-w-full overflow-x-scroll"}>
-              {JSON.stringify(pusherError, null, 2)}
-            </pre>
-          </code>
-        ))}
+      )}
     </div>
   );
 };

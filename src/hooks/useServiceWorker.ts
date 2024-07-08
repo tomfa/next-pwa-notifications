@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { env } from "@/env";
 
 export const useServiceWorker = () => {
@@ -117,5 +117,11 @@ export const useServiceWorker = () => {
     requestPushPermission,
     pushPermission,
     hasPushPermission: !!pushPermission,
+    data: {
+      scope: sw?.scope,
+      active: sw?.active,
+      installing: sw?.installing,
+      waiting: sw?.waiting,
+    },
   };
 };

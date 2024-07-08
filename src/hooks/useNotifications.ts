@@ -48,6 +48,7 @@ export const useNotifications = () => {
   return {
     requestNotificationPermission,
     hasPermission,
+    permission,
     isSupported,
     sendMessage,
   };
