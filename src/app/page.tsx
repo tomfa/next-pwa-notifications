@@ -1,6 +1,5 @@
 "use client";
 
-import { Intro } from "@/components/Intro";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { useProgressiveWebApp } from "@/hooks/usePWA";
@@ -9,91 +8,9 @@ import { useNotifications } from "@/hooks/useNotifications";
 import { useState } from "react";
 import { api } from "@/api/react";
 import * as React from "react";
-import Link from "next/link";
-import {A} from "@/components/ui/link";
+import { A } from "@/components/ui/link";
 
 export default function PwaDemoPage() {
-  const { toast } = useToast();
-  const [pusherError, setPusherError] = useState<string | undefined>();
-  const pwa = useProgressiveWebApp();
-  const sw = useServiceWorker();
-  const notifs = useNotifications();
-  const push = api.push.useMutation({
-    onSuccess: () => {
-      toast({
-        description:
-          "Push notification sent. It'll pop up soon (timing not exact)",
-      });
-    },
-    onError: (err) => {
-      toast({
-        title: "Failed to send push notification",
-        description: err.message,
-        variant: "destructive",
-      });
-    },
-  });
-
-  const sendTestNotification = async () => {
-    if (!notifs.isSupported) {
-      toast({
-        description: "Notifications are not supported on your device",
-        variant: "destructive",
-      });
-      return;
-    }
-    if (!notifs.hasPermission) {
-      const { error } = await notifs.requestNotificationPermission();
-      if (error) {
-        toast({
-          description: error,
-          variant: "destructive",
-        });
-        return;
-      }
-    }
-
-    try {
-      await notifs.sendMessage(
-        "Test notification",
-        "This is a test notification",
-      );
-    } catch (err) {
-      toast({
-        title: "Failed at sending notifcation",
-        description: String(err),
-        variant: "destructive",
-      });
-    }
-  };
-
-  const requestPusherInfo = async () => {
-    if (sw.pushPermission) {
-      return;
-    }
-    if (!sw.isSupported) {
-      toast({
-        description: "Service workers are not supported on your device",
-        variant: "destructive",
-      });
-      return;
-    }
-    const { error } = await sw.register();
-    if (error) {
-      toast({
-        description: error,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      await sw.requestPushPermission();
-    } catch (err) {
-      setPusherError(String(err));
-    }
-  };
-
   return (
     <div>
       <div className={"mb-4 px-2"}>
@@ -123,96 +40,199 @@ export default function PwaDemoPage() {
       </div>
       <h2 className={"mb-2 mt-4 text-xl"}>Testing grounds: Notifications</h2>
       <h3 className={"mb-2 mt-4 text-lg"}>Prerequisites</h3>
-      <div className={"flex flex-col items-start gap-1"}>
-        <Button
-          variant={pwa.isInstalled ? "green" : "default"}
-          disabled={!pwa.isInstallAllowed || pwa.isInstalled}
-          onClick={pwa.prompt}
-        >
-          Add to Home screen: {pwa.isInstalled ? "Installed" : "install"}
-        </Button>
-        <Button
-          variant={sw.isInstalled ? "green" : "default"}
-          disabled={!sw.isSupported || sw.isInstalled}
-          onClick={sw.isInstalled ? sw.unRegister : sw.register}
-        >
-          Service worker: {sw.isInstalled ? "Installed" : "install"}
-        </Button>
+      <Prerequisites />
+      <h3 className={"mb-2 mt-4 text-lg"}>Testing</h3>
+      <NotificationTesting />
+    </div>
+  );
+}
 
-        <Button
-          variant={notifs.hasPermission ? "green" : "default"}
-          disabled={!notifs.isSupported || notifs.hasPermission}
-          onClick={notifs.requestNotificationPermission}
-        >
-          Notifications: {notifs.hasPermission ? "Allowed" : "Request access"}
-        </Button>
+const NotificationTesting = () => {
+  const { toast } = useToast();
+  const sw = useServiceWorker();
+  const notifs = useNotifications();
 
-        <Button
-          variant={sw.hasPushPermission ? "green" : "default"}
-          disabled={!sw.isSupported || sw.hasPushPermission}
-          onClick={requestPusherInfo}
-        >
-          Request pusher info
-        </Button>
-        {(sw.pushPermission && (
-              <code className={"block bg-white p-2 text-xs text-red-800"}>
+  const push = api.push.useMutation({
+    onSuccess: () => {
+      toast({
+        description:
+          "Push notification sent. It'll pop up soon (timing not exact)",
+      });
+    },
+    onError: (err) => {
+      toast({
+        title: "Failed to send push notification",
+        description: err.message,
+        variant: "destructive",
+      });
+    },
+  });
+  const sendTestNotification = async () => {
+    if (!notifs.isSupported) {
+      toast({
+        description: "Notifications are not supported on your device",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (!notifs.hasPermission) {
+      const { error } = await notifs.requestNotificationPermission();
+      if (error) {
+        toast({
+          description: error,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    try {
+      await notifs.sendMessage(
+        "Test notification",
+        "from new Notification()",
+      );
+    } catch (err) {
+      toast({
+        title: "Failed at sending notifcation",
+        description: String(err),
+        variant: "destructive",
+      });
+    }
+  };
+
+  return (
+    <div className={"flex flex-col items-start gap-1"}>
+      <p className={'mb-2 bg-amber-200 text-black px-6 py-4 rounded'}>Can&apos;t see any notifications? Maybe you&apos;re in &quot;Do not disturb&quot; on your computer/mobile?</p>
+      <Button
+        disabled={!notifs.hasPermission}
+        onClick={sendTestNotification}
+      >
+        Method 1: new Notification()
+      </Button>
+      <Button
+        disabled={!sw.isInstalled}
+        onClick={() => {
+          sw.showNotification("Test event", "serviceWorker.showNotification test").catch((err) => {
+            toast({
+              title: "Failed to send event",
+              description: String(err),
+              variant: "destructive",
+            });
+          });
+        }}
+      >
+        Method 2: ServiceWorker.sendNotification()
+      </Button>
+
+
+      <Button
+        disabled={!sw.hasPushPermission}
+        onClick={() => {
+          if (!sw.pushPermission) {
+            return;
+          }
+          push.mutate({
+            title: "Test push notification",
+            description: "This is a test push notification",
+            // @ts-expect-error
+            permission: sw.pushPermission,
+          });
+        }}
+      >
+        Method 3: Push API ➡️ ServiceWorker.showNotification()
+      </Button>
+
+    </div>
+  )
+}
+
+const Prerequisites = () => {
+  const { toast } = useToast();
+  const [pusherError, setPusherError] = useState<string | undefined>();
+  const pwa = useProgressiveWebApp();
+  const sw = useServiceWorker();
+  const notifs = useNotifications();
+
+
+  const requestPusherInfo = async () => {
+    if (sw.pushPermission) {
+      return;
+    }
+    if (!sw.isSupported) {
+      toast({
+        description: "Service workers are not supported on your device",
+        variant: "destructive",
+      });
+      return;
+    }
+    const { error } = await sw.register();
+    if (error) {
+      toast({
+        description: error,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await sw.requestPushPermission();
+    } catch (err) {
+      setPusherError(String(err));
+    }
+  };
+
+  return (
+    <div className={"flex flex-col items-start gap-1"}>
+      <Button
+        variant={pwa.isHttps ? "green" : "default"}
+        disabled
+      >
+        Served over HTTPS: {pwa.isHttps ? "Yes" : "No"}
+      </Button>
+      <Button
+        variant={pwa.isInstalled ? "green" : "default"}
+        disabled={!pwa.isInstallAllowed || pwa.isInstalled || !pwa.isHttps}
+        onClick={pwa.prompt}
+      >
+        Add to Home screen: {pwa.isInstalled ? "Installed" : "install"}
+      </Button>
+      <Button
+        variant={sw.isInstalled ? "green" : "default"}
+        disabled={!sw.isSupported || sw.isInstalled}
+        onClick={sw.isInstalled ? sw.unRegister : sw.register}
+      >
+        Service worker: {sw.isInstalled ? "Installed" : "install"}
+      </Button>
+
+      <Button
+        variant={notifs.hasPermission ? "green" : "default"}
+        disabled={!notifs.isSupported || notifs.hasPermission}
+        onClick={notifs.requestNotificationPermission}
+      >
+        Notifications: {notifs.hasPermission ? "Allowed" : "Request access"}
+      </Button>
+
+      <Button
+        variant={sw.hasPushPermission ? "green" : "default"}
+        disabled={!sw.isSupported || sw.hasPushPermission}
+        onClick={requestPusherInfo}
+      >
+        Request pusher info
+      </Button>
+      {(sw.pushPermission && (
+          <code className={"block bg-white p-2 text-xs text-red-800"}>
               <pre className={"max-w-full overflow-x-scroll"}>
                 {JSON.stringify(sw.pushPermission, null, 2)}
               </pre>
-              </code>
-          )) ||
-          (pusherError && (
-              <code className={"block bg-white p-2 text-xs text-red-800"}>
+          </code>
+        )) ||
+        (pusherError && (
+          <code className={"block bg-white p-2 text-xs text-red-800"}>
                 <pre className={"max-w-full overflow-x-scroll"}>
                   {JSON.stringify(pusherError, null, 2)}
                 </pre>
-              </code>
-          ))}
+          </code>
+        ))}
 
-      </div>
-      <h3 className={"mb-2 mt-4 text-lg"}>Testing</h3>
-
-      <div className={"flex flex-col items-start gap-1"}>
-        <Button
-          disabled={!notifs.hasPermission}
-          onClick={sendTestNotification}
-        >
-          Method 1: Notification
-        </Button>
-        <Button
-          disabled={!sw.isInstalled}
-          onClick={() => {
-            sw.sendEvent("Test event", "This is a test event").catch((err) => {
-              toast({
-                title: "Failed to send event",
-                description: String(err),
-                variant: "destructive",
-              });
-            });
-          }}
-        >
-          Method 2: ServiceWorker.sendNotification
-        </Button>
-
-
-        <Button
-          disabled={!sw.hasPushPermission}
-          onClick={() => {
-            if (!sw.pushPermission) {
-              return;
-            }
-            push.mutate({
-              title: "Test push notification",
-              description: "This is a test push notification",
-              // @ts-expect-error
-              permission: sw.pushPermission,
-            });
-          }}
-        >
-          Method 3: Notification via Push API
-        </Button>
-
-      </div>
-    </div>
-  );
+    </div>)
 }
