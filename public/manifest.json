@@ -1,0 +1,25 @@
+{
+  "name": "Dutytime",
+  "short_name": "Dutytime",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#1f2937",
+  "orientation": "portrait",
+  "description": "Chores made easy. Dutytime is a simple and easy to use app that helps you keep track of your chores and tasks. It's perfect for families, roommates, and anyone who wants to keep their home clean and organized.",
+  "icons": [{
+    "src": "img/logo_144.png",
+    "sizes": "144x144"
+  },{
+    "src": "img/logo_512.png",
+    "sizes": "512x512"
+  }, {
+    "src": "img/cleaner_red.svg",
+    "sizes": "48x48 72x72 96x96 128x128 256x256"
+  }],
+  "related_applications": [{
+    "platform": "web"
+  }],
+  "background": {
+    "service_worker": "sw.js"
+  }
+}
