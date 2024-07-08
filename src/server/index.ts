@@ -1,7 +1,7 @@
-import * as webpush from 'web-push';
+import * as webpush from "web-push";
 import { z } from "zod";
 
-import { publicProcedure, router } from './trpc';
+import { publicProcedure, router } from "./trpc";
 import { env } from "@/env";
 
 const appRouter = router({
@@ -47,4 +47,3 @@ export type AppRouter = typeof appRouter;
  *       ^? Post[]
  */
 export const createCaller = appRouter.createCaller;
-

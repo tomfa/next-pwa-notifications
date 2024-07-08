@@ -16,26 +16,90 @@ export default function PwaDemoPage() {
       <div className={"mb-4 px-2"}>
         <h1 className={"mb-2 mt-4 text-3xl"}>PWA testing grounds</h1>
         <h2 className={"mb-2 mt-4 text-xl"}>Notifications</h2>
-        <p>Notifications in the browser can be sent with 2.5 different methods</p>
+        <p>
+          Notifications in the browser can be sent with 2.5 different methods
+        </p>
         <ol className="pl-4 py-2 list-decimal text-sm">
-          <li><A href={"https://developer.mozilla.org/en-US/docs/Web/API/Notification/Notification"}>new Notification()</A></li>
-          <li><A href={"https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration/showNotification"}>serviceworker.showNotification()</A></li>
-          <li>Using <A href={'https://developer.mozilla.org/en-US/docs/Web/API/PushManager'}>PushManager API</A> to send a message from backend to a service worker that itself calls showNotification (method 2)</li>
+          <li>
+            <A
+              href={
+                "https://developer.mozilla.org/en-US/docs/Web/API/Notification/Notification"
+              }
+            >
+              new Notification()
+            </A>
+          </li>
+          <li>
+            <A
+              href={
+                "https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration/showNotification"
+              }
+            >
+              serviceworker.showNotification()
+            </A>
+          </li>
+          <li>
+            Using{" "}
+            <A
+              href={
+                "https://developer.mozilla.org/en-US/docs/Web/API/PushManager"
+              }
+            >
+              PushManager API
+            </A>{" "}
+            to send a message from backend to a service worker that itself calls
+            showNotification (method 2)
+          </li>
         </ol>
 
         <p>There are some immediate clarifications though:</p>
         <ul className="pl-4 py-2 list-disc text-sm">
           <li>On mobile phones, the app must be installed as a PWA</li>
-          <li>YES, 3rd method will display notifications on mobile phones, including iOS, <strong>even though the app is closed</strong></li>
-          <li>NO, iOS does <strong>not support 1st method</strong> <sup>unlike what <A href={'https://developer.mozilla.org/en-US/docs/Web/API/Notification/Notification#browser_compatibility'}>MDN says</A></sup></li>
-          <li>Desktop browsers does <strong>not support 3rd method</strong></li>
-          <li>iOS does not support the full showNotifications API. Note that icon is selected from web manifest (rather than specified in notification).</li>
+          <li>
+            YES, 3rd method will display notifications on mobile phones,
+            including iOS, <strong>even though the app is closed</strong>
+          </li>
+          <li>
+            NO, iOS does <strong>not support 1st method</strong>{" "}
+            <sup>
+              unlike what{" "}
+              <A
+                href={
+                  "https://developer.mozilla.org/en-US/docs/Web/API/Notification/Notification#browser_compatibility"
+                }
+              >
+                MDN says
+              </A>
+            </sup>
+          </li>
+          <li>
+            Desktop browsers does <strong>not support 3rd method</strong>
+          </li>
+          <li>
+            iOS does not support the full showNotifications API. Note that icon
+            is selected from web manifest (rather than specified in
+            notification).
+          </li>
         </ul>
 
-        <p>In the same breath, it may be worth mentioning that for a web app to be installable as PWA, it must</p>
+        <p>
+          In the same breath, it may be worth mentioning that for a web app to
+          be installable as PWA, it must
+        </p>
         <ul className="pl-4 py-2 list-disc text-sm">
-          <li>Have a <A href={'https://developer.mozilla.org/en-US/docs/Web/Manifest'}>web manifest</A></li>
-          <li>Be served over HTTPS. When doing local development, consider therefore <A href={'https://ngrok.com/'}>ngrok</A>, <A href={'https://tunnelin.com/'}>tunnelin</A>, <A href={'https://pinggy.io/'}>pinggy.io</A>, or <A href={'https://loophole.cloud/'}>loophole.cloud</A></li>
+          <li>
+            Have a{" "}
+            <A href={"https://developer.mozilla.org/en-US/docs/Web/Manifest"}>
+              web manifest
+            </A>
+          </li>
+          <li>
+            Be served over HTTPS. When doing local development, consider
+            therefore <A href={"https://ngrok.com/"}>ngrok</A>,{" "}
+            <A href={"https://tunnelin.com/"}>tunnelin</A>,{" "}
+            <A href={"https://pinggy.io/"}>pinggy.io</A>, or{" "}
+            <A href={"https://loophole.cloud/"}>loophole.cloud</A>
+          </li>
         </ul>
       </div>
       <h2 className={"mb-2 mt-4 text-xl"}>Testing grounds: Notifications</h2>
@@ -87,10 +151,7 @@ const NotificationTesting = () => {
     }
 
     try {
-      await notifs.sendMessage(
-        "Test notification",
-        "from new Notification()",
-      );
+      await notifs.sendMessage("Test notification", "from new Notification()");
     } catch (err) {
       toast({
         title: "Failed at sending notifcation",
@@ -102,17 +163,20 @@ const NotificationTesting = () => {
 
   return (
     <div className={"flex flex-col items-start gap-1"}>
-      <p className={'mb-2 bg-amber-200 text-black px-6 py-4 rounded'}>Can&apos;t see any notifications? Maybe you&apos;re in &quot;Do not disturb&quot; on your computer/mobile?</p>
-      <Button
-        disabled={!notifs.hasPermission}
-        onClick={sendTestNotification}
-      >
+      <p className={"mb-2 bg-amber-200 text-black px-6 py-4 rounded"}>
+        Can&apos;t see any notifications? Maybe you&apos;re in &quot;Do not
+        disturb&quot; on your computer/mobile?
+      </p>
+      <Button disabled={!notifs.hasPermission} onClick={sendTestNotification}>
         Method 1: new Notification()
       </Button>
       <Button
         disabled={!sw.isInstalled}
         onClick={() => {
-          sw.showNotification("Test event", "serviceWorker.showNotification test").catch((err) => {
+          sw.showNotification(
+            "Test event",
+            "serviceWorker.showNotification test",
+          ).catch((err) => {
             toast({
               title: "Failed to send event",
               description: String(err),
@@ -123,7 +187,6 @@ const NotificationTesting = () => {
       >
         Method 2: ServiceWorker.sendNotification()
       </Button>
-
 
       <Button
         disabled={!sw.hasPushPermission}
@@ -141,10 +204,9 @@ const NotificationTesting = () => {
       >
         Method 3: Push API ➡️ ServiceWorker.showNotification()
       </Button>
-
     </div>
-  )
-}
+  );
+};
 
 const Prerequisites = () => {
   const { toast } = useToast();
@@ -152,7 +214,6 @@ const Prerequisites = () => {
   const pwa = useProgressiveWebApp();
   const sw = useServiceWorker();
   const notifs = useNotifications();
-
 
   const requestPusherInfo = async () => {
     if (sw.pushPermission) {
@@ -183,10 +244,7 @@ const Prerequisites = () => {
 
   return (
     <div className={"flex flex-col items-start gap-1"}>
-      <Button
-        variant={pwa.isHttps ? "green" : "default"}
-        disabled
-      >
+      <Button variant={pwa.isHttps ? "green" : "default"} disabled>
         Served over HTTPS: {pwa.isHttps ? "Yes" : "No"}
       </Button>
       <Button
@@ -220,19 +278,19 @@ const Prerequisites = () => {
         Request pusher info
       </Button>
       {(sw.pushPermission && (
-          <code className={"block bg-white p-2 text-xs text-red-800"}>
-              <pre className={"max-w-full overflow-x-scroll"}>
-                {JSON.stringify(sw.pushPermission, null, 2)}
-              </pre>
-          </code>
-        )) ||
+        <code className={"block bg-white p-2 text-xs text-red-800"}>
+          <pre className={"max-w-full overflow-x-scroll"}>
+            {JSON.stringify(sw.pushPermission, null, 2)}
+          </pre>
+        </code>
+      )) ||
         (pusherError && (
           <code className={"block bg-white p-2 text-xs text-red-800"}>
-                <pre className={"max-w-full overflow-x-scroll"}>
-                  {JSON.stringify(pusherError, null, 2)}
-                </pre>
+            <pre className={"max-w-full overflow-x-scroll"}>
+              {JSON.stringify(pusherError, null, 2)}
+            </pre>
           </code>
         ))}
-
-    </div>)
-}
+    </div>
+  );
+};

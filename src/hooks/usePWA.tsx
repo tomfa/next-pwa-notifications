@@ -127,7 +127,7 @@ const usePWA = () => {
         beforeAppInstallpromptHandler,
       );
       window.addEventListener("appinstalled", appInstalledHandler);
-      setIsHttps(window.location.protocol === 'https:');
+      setIsHttps(window.location.protocol === "https:");
       setInitialized(true);
       return () => {
         window.removeEventListener(
@@ -195,7 +195,14 @@ const usePWA = () => {
       },
       isInitialized: initialized,
     }),
-    [initializeWindow, initialized, installStatus.isInstallAllowed, installStatus.isInstallSuccess, isHttps, prompt],
+    [
+      initializeWindow,
+      initialized,
+      installStatus.isInstallAllowed,
+      installStatus.isInstallSuccess,
+      isHttps,
+      prompt,
+    ],
   );
 };
 

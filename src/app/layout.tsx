@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import {TRPCReactProvider} from "@/api/react";
-import {ProgressiveWebAppProvider} from "@/hooks/usePWA";
-import {cn} from "@/lib/utils";
+import { TRPCReactProvider } from "@/api/react";
+import { ProgressiveWebAppProvider } from "@/hooks/usePWA";
+import { cn } from "@/lib/utils";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -59,11 +59,9 @@ export default function RootLayout({
           media="(min-device-width: 1024px) and (max-device-width: 1024px) and (-webkit-min-device-pixel-ratio: 2) and (orientation: portrait)"
         />
       </head>
-      <body className={cn(inter.className, 'p-4')}>
+      <body className={cn(inter.className, "p-4")}>
         <TRPCReactProvider>
-          <ProgressiveWebAppProvider>
-            {children}
-          </ProgressiveWebAppProvider>
+          <ProgressiveWebAppProvider>{children}</ProgressiveWebAppProvider>
         </TRPCReactProvider>
       </body>
     </html>

@@ -13,9 +13,9 @@ const createContext = cache(() => {
   const heads = new Headers(headers());
   heads.set("x-trpc-source", "rsc");
 
-  return ({
+  return {
     headers: heads,
-  });
+  };
 });
 
 export const api = createCaller(createContext);

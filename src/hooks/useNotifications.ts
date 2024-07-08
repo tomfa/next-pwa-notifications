@@ -1,11 +1,13 @@
 "use client";
 
-import {useCallback, useEffect, useState} from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useServiceWorker } from "./useServiceWorker";
 
 export const useNotifications = () => {
   const [isSupported, setSupported] = useState<boolean>();
-  const [permission, setPermission] = useState<NotificationPermission | null>(null);
+  const [permission, setPermission] = useState<NotificationPermission | null>(
+    null,
+  );
 
   useEffect(() => {
     if (typeof Notification === "undefined") {
@@ -36,7 +38,7 @@ export const useNotifications = () => {
         return false;
       }
       const options: NotificationOptions = {
-        body: body || '',
+        body: body || "",
       };
       return new Notification(title, options);
     },

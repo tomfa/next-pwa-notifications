@@ -6,16 +6,21 @@
   "background_color": "#0B9B92",
   "orientation": "portrait",
   "description": "My 1st PWA",
-  "icons": [{
-    "src": "img/pwa/logo_144.png",
-    "sizes": "144x144"
-  }, {
-    "src": "img/pwa/bg.svg",
-    "sizes": "48x48 72x72 96x96 128x128 256x256"
-  }],
-  "related_applications": [{
-    "platform": "web"
-  }],
+  "icons": [
+    {
+      "src": "img/pwa/logo_144.png",
+      "sizes": "144x144"
+    },
+    {
+      "src": "img/pwa/bg.svg",
+      "sizes": "48x48 72x72 96x96 128x128 256x256"
+    }
+  ],
+  "related_applications": [
+    {
+      "platform": "web"
+    }
+  ],
   "background": {
     "service_worker": "sw.js"
   }
