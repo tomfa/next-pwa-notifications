@@ -181,7 +181,10 @@ const NotificationTesting = ({
     }
 
     try {
-      await notifs.sendMessage("Test notification", "from new Notification()");
+      await notifs.sendMessage(
+        "Notification test",
+        "Message via new Notification()",
+      );
     } catch (err) {
       toast({
         title: "Failed at sending notifcation",
@@ -217,8 +220,8 @@ const NotificationTesting = ({
         disabled={!sw.isInstalled || !notifs.hasPermission}
         onClick={() => {
           sw.showNotification(
-            "Test event",
-            "serviceWorker.showNotification test",
+            "ServiceWorker test",
+            "Message via serviceWorker.showNotification",
           ).catch((err) => {
             toast({
               title: "Failed to send event",
@@ -244,8 +247,9 @@ const NotificationTesting = ({
             return;
           }
           push.mutate({
-            title: "Test push notification",
-            description: "This is a test push notification",
+            title: "PushManager notification",
+            description:
+              "This notification was sent from the backend API via a PushManager endpoint provided by your device browser. It could appear even if your PWA application was closed.",
             // @ts-expect-error
             permission: sw.pushPermission,
           });
