@@ -377,11 +377,6 @@ const Prerequisites = ({
         helpText={"PWA Requirement (mobile)"}
       />
       <Status
-        status={pwa.isInstallAllowed}
-        label={"PWA Install supported"}
-        helpText={"Mobile requirement"}
-      />
-      <Status
         status={pwa.isInstalled}
         label={"Installed as PWA"}
         helpText={
