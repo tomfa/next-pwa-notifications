@@ -9,8 +9,8 @@ import { useState } from "react";
 import * as React from "react";
 import { A } from "@/components/ui/link";
 import { Status } from "@/components/Status";
-import { useBrowser } from "@/hooks/useBrowser";
-import { usePlatform } from "@/hooks/usePlatform";
+import { Browser, useBrowser } from "@/hooks/useBrowser";
+import { Platform, usePlatform } from "@/hooks/usePlatform";
 import { api } from "@/trpc/react";
 import { JsonDisplay } from "@/components/JsonDisplay";
 
@@ -82,9 +82,6 @@ export default function PwaDemoPage() {
             </sup>
           </li>
           <li>
-            Desktop browsers does <strong>not support 3rd method</strong>
-          </li>
-          <li>
             iOS does not support the full showNotifications API. Note that icon
             is selected from web manifest (rather than specified in
             notification).
@@ -149,9 +146,16 @@ const NotificationTesting = ({
 
   const push = api.notifications.push.useMutation({
     onSuccess: () => {
+      if (browser.browser !== Browser.ARC) {
+        toast({
+          description:
+            "Push notification sent. It'll pop up soon (timing not exact)",
+        });
+        return;
+      }
       toast({
-        description:
-          "Push notification sent. It'll pop up soon (timing not exact)",
+        title: "You may not see the notification",
+        description: `Push notification sent. Since you're on the ${browser.browser} browser, I'm not sure it'll pop up.`,
       });
     },
     onError: (err) => {
@@ -220,6 +224,7 @@ const NotificationTesting = ({
         variant={!sw.isInstalled || !notifs.hasPermission ? "outline" : "green"}
         disabled={!sw.isInstalled || !notifs.hasPermission}
         onClick={() => {
+          toast({ description: "Sending SW notification..." });
           sw.showNotification(
             "ServiceWorker test",
             "Message via serviceWorker.showNotification",
@@ -238,15 +243,11 @@ const NotificationTesting = ({
       <span className="text-xs mt-4">Method 3</span>
       <Button
         variant={
-          !sw.hasPushPermission || !platform.isMobile || !notifs.hasPermission
-            ? "outline"
-            : "green"
+          !sw.hasPushPermission || !notifs.hasPermission ? "outline" : "green"
         }
         disabled={!sw.hasPushPermission || !notifs.hasPermission}
         onClick={() => {
-          if (!sw.pushPermission) {
-            return;
-          }
+          toast({ description: "Sending PushManager notification..." });
           push.mutate({
             title: "PushManager notification",
             description:
@@ -258,8 +259,10 @@ const NotificationTesting = ({
       >
         Push API ➡️ ServiceWorker.showNotification()
       </Button>
-      {!platform.isMobile && (
-        <span className="text-xs text-red-500">Only supported on Mobile</span>
+      {browser.browser === Browser.ARC && (
+        <span className="text-xs text-red-500">
+          Likely not supported on {browser.browser}
+        </span>
       )}
     </div>
   );
@@ -370,7 +373,6 @@ const Prerequisites = ({
       <Status
         status={sw.hasPushPermission}
         label={"PushManager API permissions"}
-        helpText={"Mobile requirement"}
       />
       {sw.isInstalled && sw.supportsPushManager && !sw.pushPermission && (
         <Button onClick={requestPusherInfo}>
