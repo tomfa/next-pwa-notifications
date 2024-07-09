@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { UAParser } from "ua-parser-js";
+import { red } from "next/dist/lib/picocolors";
 
 export const Browser = {
   OPERA: "Opera",
@@ -8,6 +9,7 @@ export const Browser = {
   IE: "Internet Explorer",
   EDGE: "Edge",
   CHROME: "Chrome",
+  ARC: "Arc",
 } as const;
 
 export type Browser = (typeof Browser)[keyof typeof Browser];
@@ -26,17 +28,26 @@ export const useBrowser = () => {
   }, []);
 
   useEffect(() => {
-    if (browser) {
+    if (browser || typeof window === "undefined") {
       return;
     }
     const foundBrowser = redetectBrowser();
     if (foundBrowser) {
       setBrowser(foundBrowser.browser);
       setUserAgent(foundBrowser.userAgent);
+    } else {
+      const timeout = setTimeout(redetectBrowser, 1000);
+      return () => clearTimeout(timeout);
     }
-    const timeout = setTimeout(redetectBrowser, 1500);
-    return () => clearTimeout(timeout);
   }, [browser, redetectBrowser]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    const timeout = window.setTimeout(redetectBrowser, 500);
+    return () => window.clearTimeout(timeout);
+  }, [redetectBrowser]);
 
   return useMemo(() => ({ browser, userAgent }), [browser, userAgent]);
 };
@@ -70,6 +81,13 @@ const getBrowser = (): { browser: Browser; userAgent: string } | null => {
   const isEdge = parser.getBrowser().name === "Edge";
   if (isEdge) {
     return { browser: Browser.EDGE, userAgent: navigator.userAgent };
+  }
+
+  const isArc = !!getComputedStyle(document.documentElement).getPropertyValue(
+    "--arc-palette-title",
+  );
+  if (isArc) {
+    return { browser: Browser.ARC, userAgent: navigator.userAgent };
   }
 
   const isChrome = parser.getBrowser().name === "Chrome";
