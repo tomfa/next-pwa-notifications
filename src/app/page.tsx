@@ -12,6 +12,7 @@ import { Status } from "@/components/Status";
 import { useBrowser } from "@/hooks/useBrowser";
 import { usePlatform } from "@/hooks/usePlatform";
 import { api } from "@/trpc/react";
+import { JsonDisplay } from "@/components/JsonDisplay";
 
 export default function PwaDemoPage() {
   const sw = useServiceWorker();
@@ -276,61 +277,15 @@ const DeviceInformation = ({
   return (
     <>
       <h4 className={"mb-2 mt-4 text-md"}>Browser</h4>
-      {browser && (
-        <code
-          className={
-            "block bg-gray-900 p-2 text-xs text-amber-200 border-gray-600 border"
-          }
-        >
-          <pre className={"max-w-full overflow-x-scroll"}>
-            {JSON.stringify(browser, null, 2)}
-          </pre>
-        </code>
-      )}
+      {browser && <JsonDisplay data={browser} />}
       <h4 className={"mb-2 mt-4 text-md"}>Device</h4>
-      {browser && (
-        <code
-          className={
-            "block bg-gray-900 p-2 text-xs text-amber-200 border-gray-600 border"
-          }
-        >
-          <pre className={"max-w-full overflow-x-scroll"}>
-            {JSON.stringify(device, null, 2)}
-          </pre>
-        </code>
-      )}
+      {device && <JsonDisplay data={device} />}
       <h4 className={"mb-2 mt-4 text-md"}>Notification permission</h4>
-      {notifs.permission && (
-        <code
-          className={
-            "block bg-gray-900 p-2 text-xs text-amber-200 border-gray-600 border"
-          }
-        >
-          <pre className={"max-w-full overflow-x-scroll"}>
-            {JSON.stringify(notifs.permission, null, 2)}
-          </pre>
-        </code>
-      )}
+      {notifs.permission && <JsonDisplay data={notifs.permission} />}
       <h4 className={"mb-2 mt-4 text-md"}>Push API permission</h4>
-      <code
-        className={
-          "block bg-gray-900 p-2 text-xs text-amber-200 border-gray-600 border"
-        }
-      >
-        <pre className={"max-w-full overflow-x-scroll"}>
-          {JSON.stringify(sw.pushPermission || null, null, 2)}
-        </pre>
-      </code>
+      <JsonDisplay data={sw.pushPermission || null} />
       <h4 className={"mb-2 mt-4 text-md"}>Serviceworker</h4>
-      <code
-        className={
-          "block bg-gray-900 p-2 text-xs text-amber-200 border-gray-600 border"
-        }
-      >
-        <pre className={"max-w-full overflow-x-scroll"}>
-          {JSON.stringify(sw.data || null, null, 2)}
-        </pre>
-      </code>
+      <JsonDisplay data={sw.data || null} />
     </>
   );
 };
@@ -422,17 +377,7 @@ const Prerequisites = ({
           Request PushManager API info
         </Button>
       )}
-      {pusherError && (
-        <code
-          className={
-            "block bg-white p-2 text-xs text-amber-200 border-gray-600 border"
-          }
-        >
-          <pre className={"max-w-full overflow-x-scroll"}>
-            {JSON.stringify(pusherError, null, 2)}
-          </pre>
-        </code>
-      )}
+      {pusherError && <JsonDisplay data={pusherError} />}
     </div>
   );
 };
