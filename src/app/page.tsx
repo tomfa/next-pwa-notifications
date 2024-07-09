@@ -413,8 +413,10 @@ const Prerequisites = ({
         label={"PushManager API permissions"}
         helpText={"Mobile requirement"}
       />
-      {sw.isInstalled && sw.supportsPushManager && (
-        <Button onClick={requestPusherInfo}>Request pusher access</Button>
+      {sw.isInstalled && sw.supportsPushManager && !sw.pushPermission && (
+        <Button onClick={requestPusherInfo}>
+          Request PushManager API info
+        </Button>
       )}
       {pusherError && (
         <code
