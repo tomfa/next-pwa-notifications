@@ -4,6 +4,7 @@ import "./globals.css";
 import { ProgressiveWebAppProvider } from "@/hooks/usePWA";
 import { cn } from "@/lib/utils";
 import { TRPCReactProvider } from "@/trpc/react";
+import { Toaster } from "@/components/ui/toaster";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -63,6 +64,7 @@ export default function RootLayout({
         <TRPCReactProvider>
           <ProgressiveWebAppProvider>{children}</ProgressiveWebAppProvider>
         </TRPCReactProvider>
+        <Toaster />
       </body>
     </html>
   );
