@@ -1,6 +1,6 @@
 {
-  "name": "So Progressive",
-  "short_name": "SoPWA",
+  "name": "So So Progressive",
+  "short_name": "SoSoPWA",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#0B9B92",
