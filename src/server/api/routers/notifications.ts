@@ -21,16 +21,21 @@ export const notificationRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       webpush.setVapidDetails(
-        "mailto:hi@6040.work",
+        "mailto:myemail@example.com",
         env.NEXT_PUBLIC_PUSH_API_KEY,
         env.PRIVATE_PUSH_API_KEY,
       );
 
-      const response = await webpush.sendNotification(
-        input.permission,
-        JSON.stringify({ title: input.title, body: input.description }),
-      );
-      console.log("SENDNOTIFICATION RESPONSE", response);
-      return { success: true, response };
+      try {
+        const response = await webpush.sendNotification(
+          input.permission,
+          JSON.stringify({ title: input.title, body: input.description }),
+        );
+        console.log("SENDNOTIFICATION RESPONSE", response);
+        return { success: true, response };
+      } catch (error) {
+        console.log("SENDNOTIFICATION ERROR", error);
+        throw error;
+      }
     }),
 });
