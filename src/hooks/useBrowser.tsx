@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { UAParser } from "ua-parser-js";
 
 export const Browser = {
   OPERA: "Opera",
@@ -7,8 +8,6 @@ export const Browser = {
   IE: "Internet Explorer",
   EDGE: "Edge",
   CHROME: "Chrome",
-  BLINK: "Blink",
-  ARC: "Arc",
 } as const;
 
 export type Browser = (typeof Browser)[keyof typeof Browser];
@@ -45,79 +44,41 @@ const getBrowser = (): { browser: Browser; userAgent: string } | null => {
   if (typeof window === "undefined" || typeof document === "undefined") {
     return null;
   }
-  // Opera 8.0+
-  const isOpera =
-    // @ts-ignore
-    (!!window.opr && !!opr.addons) ||
-    // @ts-ignore
-    !!window.opera ||
-    navigator.userAgent.indexOf(" OPR/") >= 0;
+
+  const parser = new UAParser(navigator.userAgent);
+  const isOpera = parser.getBrowser().name === "Opera";
 
   if (isOpera) {
     return { browser: Browser.OPERA, userAgent: navigator.userAgent };
   }
 
-  // Firefox 1.0+
-  // @ts-ignore
-  const isFirefox = typeof InstallTrigger !== "undefined";
+  const isFirefox = parser.getBrowser().name === "Firefox";
   if (isFirefox) {
     return { browser: Browser.FIREFOX, userAgent: navigator.userAgent };
   }
 
-  // Safari 3.0+ "[object HTMLElementConstructor]"
-  const isSafari =
-    // @ts-ignore
-    /constructor/i.test(window.HTMLElement) ||
-    (function (p) {
-      return p.toString() === "[object SafariRemoteNotification]";
-    })(
-      // @ts-ignore
-      !window.safari ||
-        // @ts-ignore
-        (typeof safari !== "undefined" && safari.pushNotification),
-    );
+  const isSafari = parser.getBrowser().name?.endsWith("Safari");
   if (isSafari) {
     return { browser: Browser.SAFARI, userAgent: navigator.userAgent };
   }
 
-  // Internet Explorer 6-11
-  // @ts-ignore
-  const isIE = /*@cc_on!@*/ false || !!document.documentMode;
+  const isIE = parser.getBrowser().name?.startsWith("IE");
   if (isIE) {
     return { browser: Browser.IE, userAgent: navigator.userAgent };
   }
 
-  // Edge 20+
-  // @ts-ignore
-  const isEdge = !isIE && !!window.StyleMedia;
+  const isEdge = parser.getBrowser().name === "Edge";
   if (isEdge) {
     return { browser: Browser.EDGE, userAgent: navigator.userAgent };
   }
 
-  // Does not work until after document is finished loading.
-  const isArc = !!getComputedStyle(document.documentElement).getPropertyValue(
-    "--arc-palette-title",
-  );
-  if (isArc) {
-    return { browser: Browser.ARC, userAgent: navigator.userAgent };
-  }
-
-  // Chrome 1 - 71
-  const isChrome =
-    // @ts-ignore
-    (!!window.chrome &&
-      // @ts-ignore
-      (!!window.chrome.webstore || !!window.chrome.runtime)) ||
-    (/Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor));
+  const isChrome = parser.getBrowser().name === "Chrome";
   if (isChrome) {
     return { browser: Browser.CHROME, userAgent: navigator.userAgent };
   }
 
-  // Blink engine detection
-  const isBlink = (isChrome || isOpera) && !!window.CSS;
-  if (isBlink) {
-    return { browser: Browser.BLINK, userAgent: navigator.userAgent };
-  }
-
-  return { browser: "Unknown" as any, userAgent: navigator.userAgent };
+  return {
+    browser: parser.getBrowser().name as any,
+    userAgent: navigator.userAgent,
+  };
 };
